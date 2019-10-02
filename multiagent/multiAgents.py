@@ -55,7 +55,7 @@ class ReflexAgent(Agent):
 
     def evaluationFunction(self, currentGameState, action):
 
-        
+
         """
         Design a better evaluation function here.
 
@@ -89,10 +89,10 @@ class ReflexAgent(Agent):
         for food in foodList: 
 
             #take reciprocal of foodDistance to make closer food better
-            foodDistances.append(1/(manhattanDistance(successorGameState.getPacmanPosition(), food)))
+            foodDistances.append(float(1/(manhattanDistance(successorGameState.getPacmanPosition(), food))))
 
         #only returns the closest food pellet, max cause it's the reciprocal 
-        closestFood = mean(foodDistances)
+        closestFoodScore = max(foodDistances)
 
 
 
@@ -106,29 +106,31 @@ class ReflexAgent(Agent):
         closestGhostDistance = min(distanceToGhosts)
 
 
-
-        print (successorGameState.getFood() < currentGameState.getFood())
-        if(successorGameState.getFood() < currentGameState.getFood()):
+        print "Closest Food Score: ", closestFoodScore
+        print "Is food adjacent? ", (closestFoodScore==1)
+        if(closestFoodScore==1):
 
           finalScore += 1000
 
 
         if(min(newScaredTimes) <= 3 ): #When pacman is vulnerable to ghosts and should be scared
           
-          if(closestGhostDistance<= 2):
+          if(closestGhostDistance== 1):
             print "I'M SCARED"
             finalScore += -10000
+          if(closestGhostDistance== 2):
+            finalScore += -9000
+          if(closestGhostDistance== 3):
+            finalScore += -8000
           else:
             print "I'M NOT SCARED"
-            finalScore += 100*closestFood
+            finalScore += 100*closestFoodScore
 
           
-            
-
 
         else: #When pacman has eaten a pellet and shouldn't be scared of ghosts
           
-          finalScore += 100*closestFood
+          finalScore += 100*closestFoodScore
 
         '''  
         print "Game State: ", successorGameState.__class__
