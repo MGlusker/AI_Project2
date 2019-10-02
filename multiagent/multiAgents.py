@@ -79,7 +79,8 @@ class ReflexAgent(Agent):
 
         foodList = newFood.asList()
         foodDistances = []
-        
+        finalScore = 0
+
 
         #creates a list called foodDistances that contains data about how close to food this point is, where higher is better
         for food in foodList: 
@@ -100,6 +101,9 @@ class ReflexAgent(Agent):
           distanceToGhosts.append(manhattanDistance(successorGameState.getPacmanPosition(), ghost.getPosition()))
 
         closestGhost = min(distanceToGhosts)
+
+        if(successorGameState.getFood()<currentGameState.getFood()):
+          finalScore += 10000
 
 
         if(newGhostStates <= 2): #When pacman is vulnerable to ghosts and should be scared
