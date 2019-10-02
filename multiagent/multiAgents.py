@@ -19,6 +19,7 @@ import random, util
 from game import Agent
 
 class ReflexAgent(Agent):
+
     """
       A reflex agent chooses an action at each choice point by examining
       its alternatives via a state evaluation function.
@@ -72,6 +73,52 @@ class ReflexAgent(Agent):
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+
+
+
+        foodList = newFood.asList()
+        foodDistances = []
+        
+
+        #creates a list called foodDistances that contains data about how close to food this point is, where higher is better
+        for food in foodList: 
+
+            #take reciprocal of foodDistance to make closer food better
+            foodDistances.append(1/(manhattanDistance(successorGameState.getPacmanPosition(), food)))
+
+        #only returns the closest food pellet, max cause it's the reciprocal 
+        closestFood = max(foodDistances)
+
+        #creates a list of distances to ghosts
+        distanceToGhosts = []
+
+        
+        for ghost in newGhostStates:
+          #print "ghost pos: ", ghost
+          #print "ghost class: ", ghost.__class__
+          distanceToGhosts.append(manhattanDistance(successorGameState.getPacmanPosition(), ghost.getPosition()))
+
+        closestGhost = min(distanceToGhosts)
+
+
+        if(newGhostStates <= 2): #When pacman is vulnerable to ghosts and should be scared
+
+          scaredGhostScore = -2* (.5**closestGhost)
+
+          return scaredGhostScore + closestFood
+            
+
+
+        else: #When pacman has eaten a pellet and shouldn't be scared of ghosts
+          return closestFood
+
+        '''  
+        print "Game State: ", successorGameState.__class__
+        print "Position: ", newPos
+        print "list Food: ", newFood.asList()
+        print "ScaredTimes: ", newScaredTimes
+        '''
 
         "*** YOUR CODE HERE ***"
         return successorGameState.getScore()
