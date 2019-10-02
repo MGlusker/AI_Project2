@@ -80,24 +80,27 @@ class ReflexAgent(Agent):
 
 
 
+        #print newFood
         foodList = newFood.asList()
         foodDistances = []
-        finalScore =0.0
+        finalScore = 0.0
 
 
         #creates a list called foodDistances that contains data about how close to food this point is, where higher is better
         for food in foodList: 
 
             #take reciprocal of foodDistance to make closer food better
-            foodDistances.append(manhattanDistance(successorGameState.getPacmanPosition(), food))
+            foodDistances.append(1 / (manhattanDistance(successorGameState.getPacmanPosition(), food)))
 
         #only returns the closest food pellet, max cause it's the reciprocal 
         #print "foodDistances type", foodDistances.__class__
         #print "foodDistances[0] type", foodDistances[0].__class__
 
         #closestFoodIndex = index(min(foodDistances))
-        closestFoodScore = -min(foodDistances)
-
+        if(len(foodDistances) == 0): 
+          return finalScore
+        else:
+          closestFoodScore = max(foodDistances)
 
 
         #creates a list of distances to ghosts
@@ -112,14 +115,19 @@ class ReflexAgent(Agent):
 
         #print "Closest Food Score: ", closestFoodScore
         #print "Is food adjacent? ", (closestFoodScore==1)
-        if(len(foodDistances)==0):
+        """if(len(foodDistances)==0):
           return finalScore
         else:
-          if (min(foodDistances)==0):
-            finalScore = finalScore + 1000
+          finalScore += 1000
+        """
 
         #if(currentGameState.getFood()>successorGameState.getFood()):
           ##finalScore = finalScore + 100000000
+
+        # if the next spot is food, GOOD, increase score
+        if(len(newFood.asList()) < len(currentGameState.getFood().asList())):
+          finalScore += 1000
+
 
 
         if(min(newScaredTimes) <= 3 ): #When pacman is vulnerable to ghosts and should be scared
@@ -151,8 +159,9 @@ class ReflexAgent(Agent):
         print "ScaredTimes: ", newScaredTimes
         '''
 
-        print "** FINAL SCORE: ", finalScore, " **"
+        #print "** FINAL SCORE: ", finalScore, " **"
         return finalScore
+        return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
     """
