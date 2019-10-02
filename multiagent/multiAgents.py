@@ -78,90 +78,66 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
 
-
-
-        #print newFood
         foodList = newFood.asList()
         foodDistances = []
         finalScore = 0.0
 
+        # find the manhattan distance to each pellet of food
+        for food in foodList:    
+            foodDistances.append(manhattanDistance(successorGameState.getPacmanPosition(), food))
 
-        #creates a list called foodDistances that contains data about how close to food this point is, where higher is better
-        for food in foodList: 
-
-            #take reciprocal of foodDistance to make closer food better
-            foodDistances.append(1 / (manhattanDistance(successorGameState.getPacmanPosition(), food)))
-
-        #only returns the closest food pellet, max cause it's the reciprocal 
-        #print "foodDistances type", foodDistances.__class__
-        #print "foodDistances[0] type", foodDistances[0].__class__
-
-        #closestFoodIndex = index(min(foodDistances))
+        # if there's no food left in the game
         if(len(foodDistances) == 0): 
-          return finalScore
+          # if the next state will result in there being 0 pellets of food left, take that move
+          return finalScore + 100000000
+         
         else:
-          closestFoodScore = max(foodDistances)
+          # get the closest food and scale it up to make it more desireable
+          closestFoodDistance = min(foodDistances) 
+          closestFoodScore = (1.0/closestFoodDistance) * 500.0
 
 
         #creates a list of distances to ghosts
         distanceToGhosts = []
         for ghost in newGhostStates:
-          #print "ghost pos: ", ghost
-          #print "ghost class: ", ghost.__class__
           distanceToGhosts.append(manhattanDistance(successorGameState.getPacmanPosition(), ghost.getPosition()))
 
+        # manhattan distance to the closest ghost
         closestGhostDistance = min(distanceToGhosts)
+  
+
+        # if pacman is vulnerable to ghosts or is about to become vulnerable (arbitrary cut off is 3 seconds)
+        if(min(newScaredTimes) <= 3):
+
+          # if the next spot is  food, GOOD, increase score
+          if(len(newFood.asList()) < len(currentGameState.getFood().asList())):
+            finalScore += 1000
 
 
-        #print "Closest Food Score: ", closestFoodScore
-        #print "Is food adjacent? ", (closestFoodScore==1)
-        """if(len(foodDistances)==0):
-          return finalScore
+          # if pacman is close to a ghost, BAD, decrement score 
+          if(closestGhostDistance <= 3):
+            if(closestGhostDistance == 0):
+              finalScore -= float("inf")
+            if(closestGhostDistance == 1):
+              finalScore -= 10000
+            if(closestGhostDistance == 2):
+              finalScore -= 8000
+            if(closestGhostDistance == 3):
+              finalScore -= 7000
+
+          # otherwise pacman is at least 4 spaces away
+          else:
+            # so reward the closest food spot 
+            finalScore += closestFoodScore
+
+        # otherwise pacman can go wherever, so go straight for food without care for ghosts
         else:
-          finalScore += 1000
-        """
+          finalScore += closestFoodScore
+          # if the next spot is  food, GOOD, increase score
+          if(len(newFood.asList()) < len(currentGameState.getFood().asList())):
+            finalScore += 1000
 
-        #if(currentGameState.getFood()>successorGameState.getFood()):
-          ##finalScore = finalScore + 100000000
-
-        # if the next spot is food, GOOD, increase score
-        if(len(newFood.asList()) < len(currentGameState.getFood().asList())):
-          finalScore += 1000
-
-
-
-        if(min(newScaredTimes) <= 3 ): #When pacman is vulnerable to ghosts and should be scared
-          
-          if(closestGhostDistance== 0):
-            finalScore += -11000
-          if(closestGhostDistance== 1):
-            print "**I'M SCARED**"
-            finalScore += -10000  #-float('inf')
-          if(closestGhostDistance== 2):
-            finalScore += -9000
-          if(closestGhostDistance== 3):
-            finalScore += -8000
-          
-          if(closestGhostDistance> 3):
-            #print "I'M NOT SCARED"
-            finalScore += 10*closestFoodScore
-
-          
-
-        else: #When pacman has eaten a pellet and shouldn't be scared of ghosts
-          
-          finalScore += 10*closestFoodScore
-
-        '''  
-        print "Game State: ", successorGameState.__class__
-        print "Position: ", newPos
-        print "list Food: ", newFood.asList()
-        print "ScaredTimes: ", newScaredTimes
-        '''
-
-        #print "** FINAL SCORE: ", finalScore, " **"
         return finalScore
-        return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
     """
