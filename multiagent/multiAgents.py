@@ -79,7 +79,7 @@ class ReflexAgent(Agent):
 
         foodList = newFood.asList()
         foodDistances = []
-        finalScore = 0
+        finalScore =0
 
 
         #creates a list called foodDistances that contains data about how close to food this point is, where higher is better
@@ -91,31 +91,39 @@ class ReflexAgent(Agent):
         #only returns the closest food pellet, max cause it's the reciprocal 
         closestFood = max(foodDistances)
 
+
+
         #creates a list of distances to ghosts
         distanceToGhosts = []
-
-        
         for ghost in newGhostStates:
           #print "ghost pos: ", ghost
           #print "ghost class: ", ghost.__class__
           distanceToGhosts.append(manhattanDistance(successorGameState.getPacmanPosition(), ghost.getPosition()))
 
-        closestGhost = min(distanceToGhosts)
-
-        if(successorGameState.getFood()<currentGameState.getFood()):
-          finalScore += 10000
+        closestGhostDistance = min(distanceToGhosts)
 
 
-        if(newGhostStates <= 2): #When pacman is vulnerable to ghosts and should be scared
 
-          scaredGhostScore = -2* (.5**closestGhost)
+        print (successorGameState.getFood() < currentGameState.getFood())
+        if(successorGameState.getFood() < currentGameState.getFood()):
+          
+          finalScore += 1000
 
-          return scaredGhostScore + closestFood
+
+        if(newScaredTimes <= 2): #When pacman is vulnerable to ghosts and should be scared
+          print "I'M SCARED"
+          if(closestGhostDistance<= 2):
+            finalScore += -10000
+          else:
+            finalScore += closestFood
+
+          
             
 
 
         else: #When pacman has eaten a pellet and shouldn't be scared of ghosts
-          return closestFood
+          print "I'M NOT SCARED"
+          finalScore += closestFood
 
         '''  
         print "Game State: ", successorGameState.__class__
@@ -124,8 +132,8 @@ class ReflexAgent(Agent):
         print "ScaredTimes: ", newScaredTimes
         '''
 
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+    
+        return finalScore
 
 def scoreEvaluationFunction(currentGameState):
     """
