@@ -18,6 +18,7 @@ import random, util
 
 from game import Agent
 
+
 class ReflexAgent(Agent):
 
     """
@@ -53,6 +54,8 @@ class ReflexAgent(Agent):
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState, action):
+
+        
         """
         Design a better evaluation function here.
 
@@ -89,7 +92,7 @@ class ReflexAgent(Agent):
             foodDistances.append(1/(manhattanDistance(successorGameState.getPacmanPosition(), food)))
 
         #only returns the closest food pellet, max cause it's the reciprocal 
-        closestFood = max(foodDistances)
+        closestFood = mean(foodDistances)
 
 
 
@@ -106,24 +109,26 @@ class ReflexAgent(Agent):
 
         print (successorGameState.getFood() < currentGameState.getFood())
         if(successorGameState.getFood() < currentGameState.getFood()):
-          
+
           finalScore += 1000
 
 
-        if(newScaredTimes <= 2): #When pacman is vulnerable to ghosts and should be scared
-          print "I'M SCARED"
+        if(min(newScaredTimes) <= 3 ): #When pacman is vulnerable to ghosts and should be scared
+          
           if(closestGhostDistance<= 2):
+            print "I'M SCARED"
             finalScore += -10000
           else:
-            finalScore += closestFood
+            print "I'M NOT SCARED"
+            finalScore += 100*closestFood
 
           
             
 
 
         else: #When pacman has eaten a pellet and shouldn't be scared of ghosts
-          print "I'M NOT SCARED"
-          finalScore += closestFood
+          
+          finalScore += 100*closestFood
 
         '''  
         print "Game State: ", successorGameState.__class__
