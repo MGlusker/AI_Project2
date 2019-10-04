@@ -297,7 +297,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           pacmanSuccessors.append(gameState.generateSuccessor(self.index, action))
         
         for child in pacmanSuccessors:
-          pacmanSuccessorsEvalScores.append(self.getActionRecursiveHelper(child, 1))
+          pacmanSuccessorsEvalScores.append(self.maxRecursiveHelper(child, 1, float('Inf'), -float('Inf') ))
 
         return pacmanLegalActions[pacmanSuccessorsEvalScores.index(max(pacmanSuccessorsEvalScores))]
      
