@@ -332,7 +332,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return max(pacmanSuccessorsEvalScores)
 
 
-      def minRecursiveHelper(self, gameState, depthCounter, alpha, beta)
+      def minRecursiveHelper(self, gameState, depthCounter, alpha, beta):
 
         numAgents = gameState.getNumAgents()
 
@@ -357,7 +357,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           ghostSuccessorsEvalScores.append(self.getActionRecursiveHelper(child, depthCounter+1))
       
         return min(ghostSuccessorsEvalScores)
-        """
+      
         
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -368,7 +368,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
           Returns the expectimax action using self.depth and self.evaluationFunction
 
-          All ghosts should be modeled as choosing uniformly at random from their
+          All ghosts should be modeled as choosing -uniformly at random from their
           legal moves.
         """
         "*** YOUR CODE HERE ***"
