@@ -306,6 +306,43 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     def maxRecursiveHelper(self, gameState, depthCounter, alpha, beta):
 
       numAgents = gameState.getNumAgents()
+      v = -float('Inf')
+
+      #cutoff test
+      if((self.depth*numAgents) == depthCounter):
+        return self.evaluationFunction(gameState)
+
+      #implement a terminal test
+      if(gameState.isWin() == True or gameState.isLose() == True):
+        return self.evaluationFunction(gameState)
+
+      pacmanSuccessors = [] #list of GameStates
+      pacmanSuccessorsEvalScores = [] #list of GameStates returned scores
+
+      pacmanLegalActions = gameState.getLegalActions(self.index)
+
+
+
+
+      for action in pacmanLegalActions:
+        pacmanSuccessors.append(gameState.generateSuccessor(self.index, action))
+
+      for child in pacmanSuccessors:
+        v = max([v, self.minRecursiveHelper(child, depthCounter+1, alpha, beta)])
+
+        if(v >= beta):
+          return v
+
+        alpha = max([alpha, v])
+
+        
+      return v
+
+
+    def minRecursiveHelper(self, gameState, depthCounter, alpha, beta):
+
+      numAgents = gameState.getNumAgents()
+      v = float('Inf')
 
       #cutoff test
       if((self.depth*numAgents) == depthCounter):
@@ -315,48 +352,30 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
       if(gameState.isWin() ==True or gameState.isLose() == True):
         return self.evaluationFunction(gameState)
 
-      # When it's pacman's turn
-      if((depthCounter%numAgents) == self.index): 
+      ghostNumber = (depthCounter%numAgents) #which ghost is it?
+      ghostSuccessors = [] #list of GameStates
+      ghostSuccessorsEvalScores = [] #list of GameStates returned scores
 
-        pacmanSuccessors = [] #list of GameStates
-        pacmanSuccessorsEvalScores = [] #list of GameStates returned scores
+      ghostLegalActions = gameState.getLegalActions(ghostNumber)
 
-        pacmanLegalActions = gameState.getLegalActions(self.index)
-
-        for action in pacmanLegalActions:
-          pacmanSuccessors.append(gameState.generateSuccessor(self.index, action))
-
-        for child in pacmanSuccessors:
-          pacmanSuccessorsEvalScores.append(self.getActionRecursiveHelper(child, depthCounter+1))
-
-        return max(pacmanSuccessorsEvalScores)
+      for action in ghostLegalActions:
+        ghostSuccessors.append(gameState.generateSuccessor(ghostNumber, action))
 
 
-      def minRecursiveHelper(self, gameState, depthCounter, alpha, beta):
+      for child in ghostSuccessors:
+        
+        # When it's pacman's turn
+        if((depthCounter%numAgents) == self.index):
+          v = min([v, self.maxRecursiveHelper(child, depthCounter+1, alpha, beta)])
+        else:
+          v = min([v, self.minRecursiveHelper(child, depthCounter+1, alpha, beta)])
 
-        numAgents = gameState.getNumAgents()
+        if(v <= alpha):
+          return v
 
-        #cutoff test
-        if((self.depth*numAgents) == depthCounter):
-          return self.evaluationFunction(gameState)
+        beta = min([beta, v])
 
-        #implement a terminal test
-        if(gameState.isWin() ==True or gameState.isLose() == True):
-          return self.evaluationFunction(gameState)
-
-        ghostNumber = (depthCounter%numAgents) #which ghost is it?
-        ghostSuccessors = [] #list of GameStates
-        ghostSuccessorsEvalScores = [] #list of GameStates returned scores
-
-        ghostLegalActions = gameState.getLegalActions(ghostNumber)
-
-        for action in ghostLegalActions:
-          ghostSuccessors.append(gameState.generateSuccessor(ghostNumber, action))
-
-        for child in ghostSuccessors:
-          ghostSuccessorsEvalScores.append(self.getActionRecursiveHelper(child, depthCounter+1))
-      
-        return min(ghostSuccessorsEvalScores)
+      return v
       
         
 class ExpectimaxAgent(MultiAgentSearchAgent):
