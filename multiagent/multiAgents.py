@@ -16,6 +16,7 @@ from util import manhattanDistance
 from game import Directions
 import random, util
 import searchAgents
+import search
 
 from game import Agent
 
