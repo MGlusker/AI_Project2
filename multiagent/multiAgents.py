@@ -548,6 +548,50 @@ def betterEvaluationFunction(currentGameState):
         finalScore += 1000
 
     return finalScore
+
+
+
+def aStarSearch(problem, heuristic=foodHeuristic):
+    
+    """Search the node that has the lowest combined cost and heuristic first."""
+    # get the start state and convert it into a node
+    startNode = nodeClass(problem.getStartState(), "Stop", 0,  None)
+
+    # create a priority queue to store the nodes that are on the frontier
+    #PQ ordered by path-cost + heuristic where lowest cost = highest priority = will be popped out first)
+    frontier = util.PriorityQueue()
+
+    frontier.push(startNode, getPathCost(problem, startNode, startNode) + heuristic(startNode.getState(), problem))
+
+    # create an explored set that keeps track of explored states 
+    explored = []
+
+    # loop through frontier as long as it contains at least one node
+    while not frontier.isEmpty(): 
+
+        # pop the next node off the frontier
+        node = frontier.pop()
+        
+        # if the popped off node's state is the goal state, return the solution
+        if problem.isGoalState(node.getState()): 
+            return getListOfActions(node, startNode)
+       
+        # if the node's state isn't in explored 
+        if node.getState() not in explored:
+
+            # then add the nodes state to explored
+            explored.append(node.getState())
+
+            # and add its children to the frontier 
+            # convertedNeighbors is a list of the succesor nodes
+            convertedNeighbors = successorsToNodes(problem.getSuccessors(node.getState()), node)
+            for child in convertedNeighbors:
+                frontier.push(child, getPathCost(problem, child, startNode) + heuristic(child.getState(), problem))
+
+    print "FAILURE: No Solution Found"
+    return Directions.STOP
+ 
+
 # Abbreviation
 better = betterEvaluationFunction
 
