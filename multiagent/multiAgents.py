@@ -290,6 +290,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         pacmanSuccessors = [] #list of GameStates
         pacmanSuccessorsEvalScores = [] #list of GameStates returned scores
+        alpha = -float('Inf')
+        beta = float('Inf')
+        v = -float('Inf')
 
         pacmanLegalActions = gameState.getLegalActions(self.index)
 
@@ -297,7 +300,14 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           pacmanSuccessors.append(gameState.generateSuccessor(self.index, action))
         
         for child in pacmanSuccessors:
-          pacmanSuccessorsEvalScores.append(self.minRecursiveHelper(child, 1, 1, -float('Inf'), float('Inf') ))
+          v = max([v, self.minRecursiveHelper(child, 1, 1, alpha, beta)])
+          pacmanSuccessorsEvalScores.append(v)
+
+          if(v > beta):
+            break
+
+          alpha = max([alpha, v])
+
 
         return pacmanLegalActions[pacmanSuccessorsEvalScores.index(max(pacmanSuccessorsEvalScores))]
      
@@ -305,29 +315,17 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     def maxRecursiveHelper(self, gameState, depthCounter, ghostNumber, alpha, beta):
 
-      
-      print "\n***"
-      print "MAX"
-      print "depthCounter: ",depthCounter
-      print "alpha: ", alpha
-      print "beta: ", beta
-      print "*** \n"
-      
-      
-
-
-
       numAgents = gameState.getNumAgents()
       v = -float('Inf')
 
       #cutoff test
       if((self.depth*numAgents) == depthCounter):
-        #print "cutoff"
+
         return self.evaluationFunction(gameState)
 
       #implement a terminal test
       if(gameState.isWin() == True or gameState.isLose() == True):
-        #print "terminal"
+
         return self.evaluationFunction(gameState)
 
       pacmanSuccessors = [] #list of GameStates
@@ -337,80 +335,50 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
 
       for action in pacmanLegalActions:
-        pacmanSuccessors.append(gameState.generateSuccessor(self.index, action))
+        child = gameState.generateSuccessor(self.index, action)
 
-      for child in pacmanSuccessors:
+      
         v = max([v, self.minRecursiveHelper(child, depthCounter+1, ghostNumber, alpha, beta)])
 
-        print
-        print "max"
-        print "v: ", v
-        print "beta: ", beta
-        print
-
         if(v > beta):
-          print "max prune"
           return v
 
         alpha = max([alpha, v])
-        print "alpha class: ", alpha.__class__ 
 
         
       return v
 
 
     def minRecursiveHelper(self, gameState, depthCounter, ghostNumber, alpha, beta):
-      
-      print "***"
-      print "MIN"
-      print "depthCounter: ",depthCounter
-      print "alpha: ", alpha
-      print "beta: ", beta
-      print "***"
-      print 
-      
+
       numAgents = gameState.getNumAgents()
       v = float('Inf')
 
-      #print numAgents
-
       #cutoff test
       if((self.depth*numAgents) == depthCounter):
-        #print "At depth counter limit"
+
         return self.evaluationFunction(gameState)
 
       #implement a terminal test
       if(gameState.isWin() ==True or gameState.isLose() == True):
-        #print "At terminal", gameState
+
         return self.evaluationFunction(gameState)
 
-      #ghostNumber = (depthCounter%numAgents) #which ghost is it?
-      #ghostNumber = (numAgents%depthCounter) + 1
+
       ghostSuccessors = [] #list of GameStates
       ghostSuccessorsEvalScores = [] #list of GameStates returned scores
 
       ghostLegalActions = gameState.getLegalActions(ghostNumber)
 
       for action in ghostLegalActions:
-        ghostSuccessors.append(gameState.generateSuccessor(ghostNumber, action))
+        child = gameState.generateSuccessor(ghostNumber, action)
 
-      #print "before loop"
-      for child in ghostSuccessors:
-
-        #print "in loop"
         # When it's pacman's turn
         if ghostNumber == numAgents-1:
         #if((depthCounter%numAgents) == self.index):
 
-          #print " ***Pacman turn "
           v = min([v, self.maxRecursiveHelper(child, depthCounter+1, 1, alpha, beta)])
 
-          '''
-          print "(min) v", v
-          print "v class: ", v.__class__
-          print "alpha class", alpha.__class__
-          print "class:",min([beta, v])
-          '''
 
         # otherwise it's the next ghosts turn
         else:
@@ -418,13 +386,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         
 
         if(v < alpha):
-          print "inside return"
           return v
-
       
         beta = min([beta, v])
-       
-
       
       return v
       
