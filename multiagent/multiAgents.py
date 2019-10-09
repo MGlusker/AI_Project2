@@ -468,7 +468,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           ghostSuccessorsEvalScores.append(self.getActionRecursiveHelper(child, depthCounter+1))
       
         return sum(ghostSuccessorsEvalScores)/len(ghostSuccessorsEvalScores)
-        #return min(ghostSuccessorsEvalScores)
+    
         
 
 def betterEvaluationFunction(currentGameState):
@@ -478,9 +478,76 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Useful information you can extract from a GameState (pacman.py)
 
+    successorGameState = currentGameState.generatePacmanSuccessor(action)
+    
+    newPos = successorGameState.getPacmanPosition()
+    newFood = successorGameState.getFood()
+    newGhostStates = successorGameState.getGhostStates()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+
+    foodList = newFood.asList()
+    foodDistances = []
+    finalScore = 0.0
+
+    # find the manhattan distance to each pellet of food
+    for food in foodList:    
+        foodDistances.append(manhattanDistance(currentGameState.getPacmanPosition(), food))
+
+    # if there's no food left in the game
+    if(len(foodDistances) == 0): 
+      # if the next state will result in there being 0 pellets of food left, take that move
+      return finalScore + 100000000
+     
+    else:
+      # get the closest food and scale it up to make it more desireable
+      closestFoodDistance = min(foodDistances) 
+      closestFoodScore = (1.0/closestFoodDistance) * 500.0
+
+
+    #creates a list of distances to ghosts
+    distanceToGhosts = []
+    for ghost in newGhostStates:
+      distanceToGhosts.append(manhattanDistance(successorGameState.getPacmanPosition(), ghost.getPosition()))
+
+    # manhattan distance to the closest ghost
+    closestGhostDistance = min(distanceToGhosts)
+
+
+    # if pacman is vulnerable to ghosts or is about to become vulnerable (arbitrary cut off is 3 seconds)
+    if(min(newScaredTimes) <= 3):
+
+      # if the next spot is  food, GOOD, increase score
+      if(len(newFood.asList()) < len(currentGameState.getFood().asList())):
+        finalScore += 1000
+
+
+      # if pacman is close to a ghost, BAD, decrement score 
+      if(closestGhostDistance <= 3):
+        if(closestGhostDistance == 0):
+          finalScore -= float("inf")
+        if(closestGhostDistance == 1):
+          finalScore -= 10000
+        if(closestGhostDistance == 2):
+          finalScore -= 8000
+        if(closestGhostDistance == 3):
+          finalScore -= 7000
+
+      # otherwise pacman is at least 4 spaces away
+      else:
+        # so reward the closest food spot 
+        finalScore += closestFoodScore
+
+    # otherwise pacman can go wherever, so go straight for food without care for ghosts
+    else:
+      finalScore += closestFoodScore
+      # if the next spot is  food, GOOD, increase score
+      if(len(newFood.asList()) < len(currentGameState.getFood().asList())):
+        finalScore += 1000
+
+    return finalScore
 # Abbreviation
 better = betterEvaluationFunction
 
