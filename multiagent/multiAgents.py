@@ -360,15 +360,15 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
 
     def minRecursiveHelper(self, gameState, depthCounter, ghostNumber, alpha, beta):
-      '''
+      
       print "***"
-      print "min"
+      print "MIN"
       print "depthCounter: ",depthCounter
       print "alpha: ", alpha
       print "beta: ", beta
       print "***"
       print 
-      '''
+      
       numAgents = gameState.getNumAgents()
       v = float('Inf')
 
@@ -402,7 +402,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         if ghostNumber == numAgents-1:
         #if((depthCounter%numAgents) == self.index):
 
-          print " ***Pacman turn "
+          #print " ***Pacman turn "
           v = min([v, self.maxRecursiveHelper(child, depthCounter+1, 1, alpha, beta)])
 
           '''
@@ -415,17 +415,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # otherwise it's the next ghosts turn
         else:
           v = min([v, self.minRecursiveHelper(child, depthCounter+1, ghostNumber+1, alpha, beta)])
-        print
-        print "min"
-        print "v: ", v
-        print "alpha: ", alpha
-        print
+        
 
         if(v < alpha):
           print "inside return"
           return v
 
-        print "gets here"
+      
         beta = min([beta, v])
        
 
