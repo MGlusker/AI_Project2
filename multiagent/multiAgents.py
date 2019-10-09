@@ -405,8 +405,71 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing -uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        #It's necessarily pacman's turn cause this is at the root 
+
+        pacmanSuccessors = [] #list of GameStates
+        pacmanSuccessorsEvalScores = [] #list of GameStates returned scores
+
+        pacmanLegalActions = gameState.getLegalActions(self.index)
+
+        for action in pacmanLegalActions:
+          pacmanSuccessors.append(gameState.generateSuccessor(self.index, action))
+        
+        for child in pacmanSuccessors:
+          pacmanSuccessorsEvalScores.append(self.getActionRecursiveHelper(child, 1))
+
+        return pacmanLegalActions[pacmanSuccessorsEvalScores.index(max(pacmanSuccessorsEvalScores))]
+     
+
+
+    def getActionRecursiveHelper(self, gameState, depthCounter):
+
+      numAgents = gameState.getNumAgents()
+
+      #cutoff test
+      if((self.depth*numAgents) == depthCounter):
+        return self.evaluationFunction(gameState)
+
+      #implement a terminal test
+      if(gameState.isWin() ==True or gameState.isLose() == True):
+        return self.evaluationFunction(gameState)
+
+      # When it's pacman's turn
+      if((depthCounter%numAgents) == self.index): 
+
+        pacmanSuccessors = [] #list of GameStates
+        pacmanSuccessorsEvalScores = [] #list of GameStates returned scores
+
+        pacmanLegalActions = gameState.getLegalActions(self.index)
+
+        for action in pacmanLegalActions:
+          pacmanSuccessors.append(gameState.generateSuccessor(self.index, action))
+
+        for child in pacmanSuccessors:
+          pacmanSuccessorsEvalScores.append(self.getActionRecursiveHelper(child, depthCounter+1))
+
+        return max(pacmanSuccessorsEvalScores)
+
+
+      #It's a ghost turn
+      else: 
+
+        ghostNumber = (depthCounter%numAgents) #which ghost is it?
+        ghostSuccessors = [] #list of GameStates
+        ghostSuccessorsEvalScores = [] #list of GameStates returned scores
+
+        ghostLegalActions = gameState.getLegalActions(ghostNumber)
+
+        for action in ghostLegalActions:
+          ghostSuccessors.append(gameState.generateSuccessor(ghostNumber, action))
+
+        for child in ghostSuccessors:
+          ghostSuccessorsEvalScores.append(self.getActionRecursiveHelper(child, depthCounter+1))
+      
+        return sum(ghostSuccessorsEvalScores)/len(ghostSuccessorsEvalScores)
+        #return min(ghostSuccessorsEvalScores)
+        
 
 def betterEvaluationFunction(currentGameState):
     """
