@@ -139,7 +139,7 @@ class ReflexAgent(Agent):
           if(len(newFood.asList()) < len(currentGameState.getFood().asList())):
             finalScore += 1000
 
-        return finalScore
+        return finalScore 
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -473,83 +473,103 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     
         
 
-def betterEvaluationFunction(currentGameState):
+def betterEvaluationFunction(currentGameState): 
+
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: This evaluation function looks at the current position of pacman,
+      the current positions of all the food pellets, the current position of all of the ghosts,
+      and the current position of all of the food capsules. The function calculates a food score,
+      a capsule score, and the distances to each ghost.
     """
-    # Useful information you can extract from a GameState (pacman.py)
-
-    successorGameState = currentGameState.generatePacmanSuccessor(action)
-    
-    newPos = successorGameState.getPacmanPosition()
-    newFood = successorGameState.getFood()
-    newGhostStates = successorGameState.getGhostStates()
-    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+    currentPos = currentGameState.getPacmanPosition()
+    currentFood = currentGameState.getFood()
+    currentGhostStates = currentGameState.getGhostStates()
+    currentScaredTimes = [ghostState.scaredTimer for ghostState in currentGhostStates]
+    currentCapsules = currentGameState.getCapsules()
 
 
-    foodList = newFood.asList()
+    foodList = currentFood.asList()
+    numFood = len(foodList)
     foodDistances = []
     finalScore = 0.0
+    foodScore = 0.0
+    originalFoodScore = 0.0
+    closestFoodScore = 0.0
 
-    # find the manhattan distance to each pellet of food
+
+    ## CREATE A FOOD SCORE
     for food in foodList:    
-        foodDistances.append(manhattanDistance(currentGameState.getPacmanPosition(), food))
-
+            foodDistances.append(manhattanDistance(currentPos, food))
+   
     # if there's no food left in the game
-    if(len(foodDistances) == 0): 
-      # if the next state will result in there being 0 pellets of food left, take that move
-      return finalScore + 100000000
+    if(numFood == 0): 
+      # then this state is really good
+      return 1000000
      
     else:
-      # get the closest food and scale it up to make it more desireable
-      closestFoodDistance = min(foodDistances) 
-      closestFoodScore = (1.0/closestFoodDistance) * 500.0
+      # reward states with less food
+      originalFoodScore = 2.5 * (1.0/numFood)
+      
+      # and reward states that have food that are close by
+      closestFoodDistance = min(foodDistances)
+      
+      # if there's food right next to pacman this is a good state
+      if closestFoodDistance == 0:
+        closestFoodScore = 200.0
+
+      # otherwise make it so closer food gets a higher score
+      else:  
+        closestFoodScore = 2.80 * (1.0/closestFoodDistance) 
+
+      # create a final food score
+      foodScore = closestFoodScore + originalFoodScore
 
 
+    ## CREATE A CAPSULE SCORE
+    capsuleScore = 0.0
+    distanceToCapsules = []
+    minCapsuleDistance = None 
+
+    for capsule in currentCapsules:
+      distanceToCapsules.append(manhattanDistance(currentPos, capsule))
+
+    if not len(distanceToCapsules) == 0:
+      minCapsuleDistance = min(distanceToCapsules)
+      # reward being close to ghosts and capsules
+      if minCapsuleDistance == 0:
+        capsuleScore = 500.0
+      else:
+        capsuleScore = 2.80 * (1.0/(minCapsuleDistance))#+closestGhostDistance))
+    else:
+      capsuleScore = 20.0 #20.0
+    
+
+    ## FIND DISTANCES TO GHOSTS
     #creates a list of distances to ghosts
     distanceToGhosts = []
-    for ghost in newGhostStates:
-      distanceToGhosts.append(manhattanDistance(successorGameState.getPacmanPosition(), ghost.getPosition()))
+    for ghost in currentGhostStates:
+      distanceToGhosts.append(manhattanDistance(currentPos, ghost.getPosition()))
 
     # manhattan distance to the closest ghost
     closestGhostDistance = min(distanceToGhosts)
 
+    
+    ## CREATE A FINALSCORE TO RETURN
+    # if the ghost is right next to pacman thats bad
+    if closestGhostDistance == 0:
+      finalScore -= 100.0
 
-    # if pacman is vulnerable to ghosts or is about to become vulnerable (arbitrary cut off is 3 seconds)
-    if(min(newScaredTimes) <= 3):
-
-      # if the next spot is  food, GOOD, increase score
-      if(len(newFood.asList()) < len(currentGameState.getFood().asList())):
-        finalScore += 1000
-
-
-      # if pacman is close to a ghost, BAD, decrement score 
-      if(closestGhostDistance <= 3):
-        if(closestGhostDistance == 0):
-          finalScore -= float("inf")
-        if(closestGhostDistance == 1):
-          finalScore -= 10000
-        if(closestGhostDistance == 2):
-          finalScore -= 8000
-        if(closestGhostDistance == 3):
-          finalScore -= 7000
-
-      # otherwise pacman is at least 4 spaces away
-      else:
-        # so reward the closest food spot 
-        finalScore += closestFoodScore
-
-    # otherwise pacman can go wherever, so go straight for food without care for ghosts
+    # otherwise scale the distance to the ghost and add in the foodscore and capsulescore
     else:
-      finalScore += closestFoodScore
-      # if the next spot is  food, GOOD, increase score
-      if(len(newFood.asList()) < len(currentGameState.getFood().asList())):
-        finalScore += 1000
+      finalScore -= 2.0 * (1.0/closestGhostDistance)
 
-    return finalScore
+      finalScore += foodScore + capsuleScore
+    
+
+    return finalScore + scoreEvaluationFunction(currentGameState) #+ numFood
 
  
 # Abbreviation
