@@ -482,7 +482,10 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: This evaluation function looks at the current position of pacman,
       the current positions of all the food pellets, the current position of all of the ghosts,
       and the current position of all of the food capsules. The function calculates a food score,
-      a capsule score, and the distances to each ghost.
+      a capsule score, and the distances to each ghost. The function rewards states where there are
+      fewer pellets of food and where there is food closer by. It also rewards states where there are
+      fewer food capsules and where food capsules are closer to pacman. Lastly, the function punishes
+      states where a ghost is close to Pacman. 
     """
     currentPos = currentGameState.getPacmanPosition()
     currentFood = currentGameState.getFood()
@@ -569,7 +572,7 @@ def betterEvaluationFunction(currentGameState):
       finalScore += foodScore + capsuleScore
     
 
-    return finalScore + scoreEvaluationFunction(currentGameState) #+ numFood
+    return finalScore + scoreEvaluationFunction(currentGameState)
 
  
 # Abbreviation
